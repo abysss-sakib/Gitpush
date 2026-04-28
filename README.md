@@ -10,13 +10,25 @@ file-explorer UI.
 
 ## What's new in this build
 
-- **The "repo not connected" bug after upload is fixed.** The old build
-  stored the active repo in a Python dict that lived inside one gunicorn
-  worker — so `Change Repo` saved it on worker A but the upload landed on
-  worker B and failed. Every API request now sends the active username +
-  repo as headers (`X-Gitpush-Username`, `X-Gitpush-Repo`), so any worker
-  can serve any request. The selection is also persisted to disk
-  (`.gitpush_ctx.json`) and mirrored to `localStorage` in the browser.
+- **Big files now upload reliably.** Single-file uploads always go through
+  a `multipart/form-data` endpoint (`/upload-file-stream`) so the file is
+  spooled to disk by Werkzeug instead of inflating ~33% inside a JSON body.
+  Folder uploads automatically detect any file `> 2 MB` and upload each
+  one as a separate streamed blob, then commit them atomically in a single
+  commit. This makes uploads work cleanly on a 512 MB Render free dyno up
+  to GitHub's hard `100 MB` per-file REST API limit.
+- **Real progress bar.** Big uploads now show real `loaded / total` bytes
+  via `XMLHttpRequest.upload.onprogress`, so you can see exactly what is
+  happening instead of a stalled spinner.
+- **Better error surfacing.** When the server crashes or returns a
+  non-JSON 500, the UI now shows the actual response text snippet and the
+  Python exception type (e.g. `MemoryError`, `ConnectionError`) instead
+  of a useless "Request failed (500)".
+- **The "repo not connected" bug after upload is fixed.** Every API
+  request sends the active username + repo as headers
+  (`X-Gitpush-Username`, `X-Gitpush-Repo`); the selection is also
+  persisted to `.gitpush_ctx.json` and mirrored to `localStorage` so any
+  worker, on any restart, can serve any request.
 - **Change User button.** The GitHub username is no longer hardcoded — pick
   any user from the navbar. The chosen user is verified against GitHub
   before it is saved.
@@ -25,6 +37,11 @@ file-explorer UI.
   remaining API rate limit. Click it to re-check on demand.
 - **Friendlier error messages** for `401` (expired token) and rate-limit
   responses.
+
+> **Note on the 100 MB limit.** GitHub's REST API rejects single files
+> larger than 100 MB outright. The UI now shows a clear error in that
+> case. Files above 100 MB require Git LFS, which is a different upload
+> protocol entirely and is out of scope for this app.
 
 ---
 
@@ -109,8 +126,11 @@ Click the pill to re-check after rotating the token.
 | `/list-files`              | GET    | List files in a path                     |
 | `/list-tree`               | GET    | Full recursive tree                      |
 | `/read-file`               | GET    | Read a single file                       |
-| `/upload-file`             | POST   | Create or update a single file           |
-| `/upload-folder-atomic`    | POST   | Push many files in one commit            |
+| `/upload-file`             | POST   | Create or update a single file (JSON)    |
+| `/upload-file-stream`      | POST   | Multipart upload for large single files  |
+| `/create-blob-stream`      | POST   | Multipart blob upload — returns blob SHA |
+| `/commit-tree`             | POST   | Atomic commit of pre-uploaded blob SHAs  |
+| `/upload-folder-atomic`    | POST   | Push many small files in one commit      |
 | `/replace-file`            | POST   | Overwrite an existing file               |
 | `/delete-file`             | POST   | Delete a single file                     |
 | `/delete-many`             | POST   | Delete many files in one commit          |
