@@ -1,142 +1,123 @@
-# GITPUSH
+# GITPUSH — GitHub Repository Manager
 
-A premium GitHub repository manager built with Flask. Browse, upload, replace,
-and delete files across any GitHub repository through a polished
-file-explorer UI.
-
-> **Author:** dev.sakib
+> **by dev.sakib** · Production-ready Flask web app for managing GitHub repositories directly from your browser.
+> Upload files, upload entire folders (with concurrent streaming), select & delete in bulk, and download any selection as a ZIP — all through a clean, modern UI.
 
 ---
 
-## What's new in this build
+## Project ZIP Structure
 
-- **Big files now upload reliably.** Single-file uploads always go through
-  a `multipart/form-data` endpoint (`/upload-file-stream`) so the file is
-  spooled to disk by Werkzeug instead of inflating ~33% inside a JSON body.
-  Folder uploads automatically detect any file `> 2 MB` and upload each
-  one as a separate streamed blob, then commit them atomically in a single
-  commit. This makes uploads work cleanly on a 512 MB Render free dyno up
-  to GitHub's hard `100 MB` per-file REST API limit.
-- **Real progress bar.** Big uploads now show real `loaded / total` bytes
-  via `XMLHttpRequest.upload.onprogress`, so you can see exactly what is
-  happening instead of a stalled spinner.
-- **Better error surfacing.** When the server crashes or returns a
-  non-JSON 500, the UI now shows the actual response text snippet and the
-  Python exception type (e.g. `MemoryError`, `ConnectionError`) instead
-  of a useless "Request failed (500)".
-- **The "repo not connected" bug after upload is fixed.** Every API
-  request sends the active username + repo as headers
-  (`X-Gitpush-Username`, `X-Gitpush-Repo`); the selection is also
-  persisted to `.gitpush_ctx.json` and mirrored to `localStorage` so any
-  worker, on any restart, can serve any request.
-- **Change User button.** The GitHub username is no longer hardcoded — pick
-  any user from the navbar. The chosen user is verified against GitHub
-  before it is saved.
-- **Token health pill.** A pill in the top-right shows whether your
-  `GITHUB_TOKEN` is valid, including the authenticated login and the
-  remaining API rate limit. Click it to re-check on demand.
-- **Friendlier error messages** for `401` (expired token) and rate-limit
-  responses.
-
-> **Note on the 100 MB limit.** GitHub's REST API rejects single files
-> larger than 100 MB outright. The UI now shows a clear error in that
-> case. Files above 100 MB require Git LFS, which is a different upload
-> protocol entirely and is out of scope for this app.
+```
+gitpush.zip
+ ├── README.md                  ← You are here
+ ├── .env.example               ← Copy to .env, add your token
+ ├── app.py                     ← Flask backend (all API routes)
+ ├── requirements.txt           ← Python dependencies
+ ├── Procfile                   ← Gunicorn config (timeout 300s)
+ ├── render.yaml                ← One-click Render deployment
+ ├── docs/
+ │    ├── setup.md              ← Step-by-step local setup
+ │    ├── deployment.md         ← Hosting & deployment guide
+ │    ├── troubleshooting.md    ← Error fixes & known issues
+ │    └── file-structure.md     ← Codebase map & explanation
+ ├── templates/
+ │    └── index.html            ← Single-page Jinja2 template
+ └── static/
+      ├── css/
+      │    └── style.css        ← Full responsive UI (dark + light)
+      └── js/
+           └── app.js           ← All frontend logic (vanilla JS)
+```
 
 ---
 
 ## Features
 
-- **File Explorer UI** — click folders to open, click files to read,
-  checkboxes to multi-select.
-- **One-click Delete All** — single confirmation popup. README at root is
-  preserved automatically. No `.gitkeep` is ever created.
-- **Atomic uploads & deletes** — every batch operation is one Git commit.
-- **Folder upload** — preserve full directory structure with one drag.
-- **Auto-recovery from 404s** — listing a deleted folder transparently
-  falls back to root.
-- **Retries on transient errors** — both client and server retry 5xx /
-  409 / 422 with exponential backoff.
-- **Light & dark theme.**
+| Feature | Description |
+|---|---|
+| **File Explorer** | Browse any folder in your repo with breadcrumb navigation |
+| **Upload File** | Upload single or multiple files with a real progress bar |
+| **Upload Folder** | Upload entire folder trees — preserves directory structure |
+| **Concurrent Uploads** | 3 blobs upload in parallel for large folder support |
+| **Select All** | Checkbox select any combination of files |
+| **Download ZIP** | Download all selected files as a `.zip` (client-side, no server needed) |
+| **Bulk Delete** | Delete multiple files/folders in one atomic commit |
+| **Delete All** | Wipe every file in the repo (README preserved) |
+| **Replace File** | Edit or replace any file inline |
+| **Git Status** | View last 15 commits with links |
+| **Repo Info** | Stars, forks, size, language, license |
+| **Light / Dark Mode** | Toggle persisted in localStorage |
+| **Mobile Responsive** | Works on phone, tablet, and desktop |
 
 ---
 
-## Local development
+## Quick Start (3 commands)
 
 ```bash
+git clone https://github.com/yourname/gitpush.git
+cd gitpush
+cp .env.example .env          # then add your GITHUB_TOKEN
 pip install -r requirements.txt
-export GITHUB_TOKEN=ghp_xxx
-python app.py
-# → http://localhost:5000
+flask run                     # visit http://localhost:5000
 ```
 
----
-
-## Deployment on Render
-
-1. Push this folder to a new GitHub repository.
-2. In Render, click **New + → Blueprint** and pick the repo. Render reads
-   `render.yaml` automatically.
-3. When prompted, set the only required secret:
-   - `GITHUB_TOKEN` — a personal access token with `repo` scope.
-4. Click **Apply**. Render builds with `pip install -r requirements.txt`
-   and starts with `python app.py`.
-
-Health check: `GET /health`
-
-### Environment variables
-
-| Var                         | Required | Description                                                                |
-| --------------------------- | -------- | -------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`              |   Yes    | GitHub PAT with `repo` scope. Without this every API call returns `401`.   |
-| `GITPUSH_DEFAULT_USERNAME`  |   No     | Default user shown on first load. Defaults to `abysss-sakib`.              |
-| `GITPUSH_CONTEXT_PATH`      |   No     | Path to the persisted context JSON. Defaults to `./.gitpush_ctx.json`.     |
-| `SECRET_KEY`                |   Auto   | Flask session secret (Render generates one).                               |
-| `PORT`                      |   Auto   | Render injects this — the app binds to `0.0.0.0`.                          |
+See **[docs/setup.md](docs/setup.md)** for the full step-by-step guide.
 
 ---
 
-## Token troubleshooting
+## GitHub Token (Required)
 
-If the **Token** pill in the top-right shows red, the token is the
-problem — not your repo. Common causes:
+1. Go to → **https://github.com/settings/tokens/new**
+2. Name: `gitpush`
+3. Select scope: ✅ **`repo`** (full repo access)
+4. Click **Generate token** — copy immediately (shown once)
+5. Paste into `.env`:
 
-- `GITHUB_TOKEN` is empty in your hosting platform.
-- The token expired (classic PATs expire; fine-grained tokens have a
-  fixed expiry date).
-- The token doesn't have `repo` scope.
-- The token belongs to a user that has no access to the chosen
-  repository (private fork, missing collaborator invite, etc.).
+```env
+GITHUB_TOKEN=ghp_YourTokenHere
+```
 
-Click the pill to re-check after rotating the token.
+> **Security:** Never commit your `.env` file. The `.gitignore` already excludes it.
 
 ---
 
-## API quick reference
+## System Analysis
 
-| Endpoint                   | Method | Purpose                                  |
-| -------------------------- | ------ | ---------------------------------------- |
-| `/health`                  | GET    | Health probe                             |
-| `/token-check`             | GET    | Verify the configured GitHub token       |
-| `/repo-context`            | GET    | Return persisted username + repo         |
-| `/change-username`         | POST   | Set the active GitHub user (verified)    |
-| `/change-repo`             | POST   | Set the active repository                |
-| `/repo-info`               | GET    | Repository metadata                      |
-| `/git-status`              | GET    | Recent commits                           |
-| `/list-files`              | GET    | List files in a path                     |
-| `/list-tree`               | GET    | Full recursive tree                      |
-| `/read-file`               | GET    | Read a single file                       |
-| `/upload-file`             | POST   | Create or update a single file (JSON)    |
-| `/upload-file-stream`      | POST   | Multipart upload for large single files  |
-| `/create-blob-stream`      | POST   | Multipart blob upload — returns blob SHA |
-| `/commit-tree`             | POST   | Atomic commit of pre-uploaded blob SHAs  |
-| `/upload-folder-atomic`    | POST   | Push many small files in one commit      |
-| `/replace-file`            | POST   | Overwrite an existing file               |
-| `/delete-file`             | POST   | Delete a single file                     |
-| `/delete-many`             | POST   | Delete many files in one commit          |
-| `/delete-all`              | POST   | Wipe everything (preserves root README)  |
-| `/branches`                | GET    | List branches                            |
+### Can it handle large folders (1000+ files)?
 
-All write endpoints accept the active context via headers
-`X-Gitpush-Username` / `X-Gitpush-Repo`, body keys `_username` / `_repo`,
-or fall back to the persisted `.gitpush_ctx.json` on disk.
+| Scenario | Result |
+|---|---|
+| < 50 small files | ✅ Inline batch — single JSON commit, very fast |
+| 50–500 files, mixed sizes | ✅ Concurrent streaming — 3 blobs at once, one atomic commit |
+| 500–1000 files | ✅ Works, takes a few minutes — GitHub API rate limit is the ceiling |
+| 1000+ files | ⚠️ Works locally; on Render free plan may hit 512 MB RAM limit |
+| Files > 100 MB each | ❌ GitHub REST API hard limit — use Git LFS for those |
+
+### Missing tools / risks in production
+
+| Risk | Severity | Fix |
+|---|---|---|
+| GitHub API rate limit (5000 req/hr for authenticated) | Medium | Use PAT with high quota; retry logic is built in |
+| Render free plan: 512 MB RAM | High | Upgrade to paid ($7/mo) or run locally |
+| Render free plan: 30s idle sleep | High | Use paid plan or a cron-style ping to keep alive |
+| No auth layer on the web UI | Medium | Add Flask-Login or Replit Auth before sharing publicly |
+| Single worker on Render free | Low | `--workers 1 --threads 8` is already set in Procfile |
+
+---
+
+## Where to Run
+
+| Environment | Best for | Notes |
+|---|---|---|
+| **Local laptop** | Development + large uploads | Zero limits, instant start |
+| **Render free** | Demo / sharing | 512 MB RAM, 30s idle sleep — avoid large uploads |
+| **Render paid ($7/mo)** | Production | Persistent disk, more RAM, no sleep |
+| **Railway / Fly.io** | Production alternative | Similar paid tiers, no sleep |
+| **VPS (DigitalOcean, Hetzner)** | Full control | Best for privacy + large repos |
+
+---
+
+## License
+
+MIT — free to use, modify, and distribute.
+Built with ❤️ by **dev.sakib**.
