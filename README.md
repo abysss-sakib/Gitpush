@@ -1,123 +1,385 @@
-# GITPUSH — GitHub Repository Manager
+<<<<<<< HEAD
+# Sa Kib — Personal Portfolio
 
-> **by dev.sakib** · Production-ready Flask web app for managing GitHub repositories directly from your browser.
-> Upload files, upload entire folders (with concurrent streaming), select & delete in bulk, and download any selection as a ZIP — all through a clean, modern UI.
+A cinematic black-and-white personal portfolio website built with React + Vite + Tailwind CSS. Features letter-by-letter name animation, typing animation, parallax cover, scroll reveal effects, and a clean monochrome anime aesthetic.
 
 ---
 
-## Project ZIP Structure
+## File Structure
 
 ```
-gitpush.zip
- ├── README.md                  ← You are here
- ├── .env.example               ← Copy to .env, add your token
- ├── app.py                     ← Flask backend (all API routes)
- ├── requirements.txt           ← Python dependencies
- ├── Procfile                   ← Gunicorn config (timeout 300s)
- ├── render.yaml                ← One-click Render deployment
- ├── docs/
- │    ├── setup.md              ← Step-by-step local setup
- │    ├── deployment.md         ← Hosting & deployment guide
- │    ├── troubleshooting.md    ← Error fixes & known issues
- │    └── file-structure.md     ← Codebase map & explanation
- ├── templates/
- │    └── index.html            ← Single-page Jinja2 template
- └── static/
-      ├── css/
-      │    └── style.css        ← Full responsive UI (dark + light)
-      └── js/
-           └── app.js           ← All frontend logic (vanilla JS)
+sakib-portfolio/
+├── public/
+│   ├── dp.jpg          ← Your profile picture
+│   └── cover.jpeg      ← Your cover/background image
+├── src/
+│   ├── components/
+│   │   ├── Navbar.tsx          ← Top navigation bar
+│   │   ├── TypingAnimation.tsx ← "I am a Developer..." cycling text
+│   │   ├── ScrollReveal.tsx    ← Scroll-triggered animations
+│   │   └── SocialLinks.tsx     ← Social media icons section
+│   ├── pages/
+│   │   └── Home.tsx    ← Main page (all sections live here)
+│   ├── App.tsx         ← Root app component
+│   ├── main.tsx        ← Entry point
+│   └── index.css       ← Global styles, fonts, keyframes
+├── index.html          ← HTML shell
+├── package.json        ← Dependencies
+├── vite.config.ts      ← Vite configuration
+├── vercel.json         ← Vercel routing config
+└── tsconfig.json       ← TypeScript config
 ```
 
 ---
 
-## Features
-
-| Feature | Description |
-|---|---|
-| **File Explorer** | Browse any folder in your repo with breadcrumb navigation |
-| **Upload File** | Upload single or multiple files with a real progress bar |
-| **Upload Folder** | Upload entire folder trees — preserves directory structure |
-| **Concurrent Uploads** | 3 blobs upload in parallel for large folder support |
-| **Select All** | Checkbox select any combination of files |
-| **Download ZIP** | Download all selected files as a `.zip` (client-side, no server needed) |
-| **Bulk Delete** | Delete multiple files/folders in one atomic commit |
-| **Delete All** | Wipe every file in the repo (README preserved) |
-| **Replace File** | Edit or replace any file inline |
-| **Git Status** | View last 15 commits with links |
-| **Repo Info** | Stars, forks, size, language, license |
-| **Light / Dark Mode** | Toggle persisted in localStorage |
-| **Mobile Responsive** | Works on phone, tablet, and desktop |
-
----
-
-## Quick Start (3 commands)
+## How to Run Locally
 
 ```bash
-git clone https://github.com/yourname/gitpush.git
-cd gitpush
-cp .env.example .env          # then add your GITHUB_TOKEN
-pip install -r requirements.txt
-flask run                     # visit http://localhost:5000
-```
+# 1. Install dependencies
+npm install
 
-See **[docs/setup.md](docs/setup.md)** for the full step-by-step guide.
+# 2. Start development server
+npm run dev
+
+# 3. Open in browser
+# http://localhost:5173
+```
 
 ---
 
-## GitHub Token (Required)
+## How to Deploy on Vercel
 
-1. Go to → **https://github.com/settings/tokens/new**
-2. Name: `gitpush`
-3. Select scope: ✅ **`repo`** (full repo access)
-4. Click **Generate token** — copy immediately (shown once)
-5. Paste into `.env`:
+### Option A — Vercel Dashboard (easiest)
+1. Go to [vercel.com](https://vercel.com) and sign up/log in
+2. Click **"Add New Project"**
+3. Click **"Upload"** and drag-drop this zip file
+4. Leave all settings as default
+5. Click **"Deploy"** — done!
 
-```env
-GITHUB_TOKEN=ghp_YourTokenHere
+### Option B — Vercel CLI
+```bash
+npm install -g vercel
+vercel
 ```
-
-> **Security:** Never commit your `.env` file. The `.gitignore` already excludes it.
 
 ---
 
-## System Analysis
+## Customization Guide (A to Z)
 
-### Can it handle large folders (1000+ files)?
+---
 
-| Scenario | Result |
+### 1. Change Your Name
+
+Open `src/pages/Home.tsx`, find this line near the top:
+
+```tsx
+const NAME_LETTERS = ["S", "A", " ", "K", "I", "B"];
+```
+
+Change the letters to spell your name. Each letter is separate. Use `" "` for a space.
+
+**Example** — for "MD RIFAT":
+```tsx
+const NAME_LETTERS = ["M", "D", " ", "R", "I", "F", "A", "T"];
+```
+
+Also update the `aria-label`:
+```tsx
+aria-label="MD RIFAT"
+```
+
+---
+
+### 2. Change Profile Picture (dp)
+
+1. Replace the file `public/dp.jpg` with your own photo
+2. Keep the filename as `dp.jpg` — or update the `src` in `Home.tsx`:
+
+```tsx
+<img src="/dp.jpg" alt="Sa Kib" .../>
+```
+
+Change `/dp.jpg` to your filename, e.g. `/myphoto.png`
+
+> Tip: For best results, use a square image (e.g. 400x400px)
+
+---
+
+### 3. Change Cover/Background Image
+
+1. Replace `public/cover.jpeg` with your image
+2. Or update the src in `Home.tsx`:
+
+```tsx
+<img src="/cover.jpeg" alt="" .../>
+```
+
+---
+
+### 4. Change the Typing Animation Words
+
+In `src/pages/Home.tsx`, find:
+
+```tsx
+<TypingAnimation words={["Developer", "Gamer", "Anime Lover", "Creator", "Builder"]} />
+```
+
+Edit the list to whatever you want:
+```tsx
+<TypingAnimation words={["Student", "Gamer", "Dreamer", "Coder"]} />
+```
+
+---
+
+### 5. Change Location
+
+Find in `Home.tsx`:
+```tsx
+<p className="font-mono text-[12px] ...">
+  DHAKA, BANGLADESH
+</p>
+<p className="font-mono text-[11px] ...">
+  STUDENT · CODE EXPLORER · MOBILE BUILDER
+</p>
+```
+
+Replace with your city/country and tagline.
+
+---
+
+### 6. Change the About Me Text
+
+In `Home.tsx`, find the About section (`{/* ── ABOUT ── */}`).
+
+The body text is inside the big `<div>` with `font-sans`. Edit the text between the `<span>` tags freely.
+
+**Highlighted words** (glowing/underlined) are wrapped in `<span>` with special styles:
+
+```tsx
+// Glowing highlight (name style):
+<span className="text-white font-semibold" style={{ textShadow: "0 0 30px rgba(255,255,255,0.55)" }}>
+  YourWord
+</span>
+
+// Underline highlight:
+<span className="text-white font-medium" style={{ borderBottom: "1px solid rgba(255,255,255,0.25)", paddingBottom: "2px" }}>
+  YourWord
+</span>
+```
+
+---
+
+### 7. Change the Status Line
+
+Find in `Home.tsx`:
+```tsx
+<p className="font-mono text-sm text-white/75 tracking-wider">
+  Building things from mobile &nbsp;—&nbsp; Dhaka, Bangladesh
+</p>
+```
+
+Replace with your current status.
+
+---
+
+### 8. Change Interests / Skills
+
+Find the skills array in `Home.tsx`:
+```tsx
+{ label: "Web Development", num: "01" },
+{ label: "Learning New Things", num: "02" },
+{ label: "Gaming", num: "03" },
+{ label: "Watching Anime", num: "04" },
+```
+
+Edit `label` values freely. Add more items by copying a line.
+
+---
+
+### 9. Change Social Media Links
+
+Open `src/components/SocialLinks.tsx`:
+
+```tsx
+const socials = [
+  {
+    icon: SiFacebook,
+    href: "https://www.facebook.com/YOUR_USERNAME",
+    label: "Facebook",
+  },
+  {
+    icon: SiInstagram,
+    href: "https://www.instagram.com/YOUR_USERNAME",
+    label: "Instagram",
+  },
+  {
+    icon: SiGithub,
+    href: "https://github.com/YOUR_USERNAME",
+    label: "GitHub",
+  },
+];
+```
+
+Replace the `href` URLs with your own profile links.
+
+**To add a new social** (e.g. YouTube), import the icon and add it:
+```tsx
+import { SiFacebook, SiInstagram, SiGithub, SiYoutube } from "react-icons/si";
+
+// Add to socials array:
+{ icon: SiYoutube, href: "https://youtube.com/@YOUR_CHANNEL", label: "YouTube" }
+```
+
+Available icons: `SiFacebook`, `SiInstagram`, `SiGithub`, `SiYoutube`, `SiDiscord`, `SiX`, `SiTiktok`, `SiTwitch`, `SiTelegram`
+
+---
+
+### 10. Change Navigation Links
+
+Open `src/components/Navbar.tsx`:
+
+```tsx
+{ label: "HOME", id: "hero" },
+{ label: "ABOUT", id: "about" },
+{ label: "SKILLS", id: "skills" },
+{ label: "SOCIAL", id: "social" },
+```
+
+- `label` — what the user sees
+- `id` — must match the `id` of the matching `<section>` in `Home.tsx`
+
+---
+
+### 11. Change Fonts
+
+Open `src/index.css`. The first line imports Google Fonts:
+
+```css
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+```
+
+And further down:
+```css
+--app-font-sans: 'Inter', sans-serif;       /* body text */
+--app-font-serif: 'Playfair Display', serif; /* headings */
+--app-font-mono: 'Space Mono', monospace;    /* labels/nav */
+```
+
+Replace font names with any Google Font. Browse at [fonts.google.com](https://fonts.google.com).
+
+---
+
+### 12. Change Background Color
+
+In `src/pages/Home.tsx`:
+```tsx
+<div className="min-h-screen bg-[#080808] ...">
+```
+
+Change `#080808` to any hex color. Default is near-black.
+
+Also in `src/index.css`:
+```css
+--background: 0 0% 3%;
+```
+
+---
+
+### 13. Change Text Brightness
+
+All text uses `text-white/XX` where XX is the opacity (0-100).
+
+- `text-white/100` = fully white (brightest)
+- `text-white/50` = 50% visible
+- `text-white/20` = very faint
+
+Increase the number to make text brighter. Decrease to make it fainter.
+
+---
+
+### 14. Change Animation Timing
+
+**Page load animation** — in `Home.tsx`:
+```tsx
+const t1 = setTimeout(() => setPhase(1), 100);   // cover fades in
+const t2 = setTimeout(() => setPhase(2), 600);   // name appears
+const t3 = setTimeout(() => setPhase(3), 1100);  // typing starts
+const t4 = setTimeout(() => setPhase(4), 1600);  // location shows
+```
+
+Increase numbers to slow down, decrease to speed up (in milliseconds).
+
+**Scroll reveal speed** — in `src/components/ScrollReveal.tsx`:
+```tsx
+transition: `opacity 0.75s ease ...`
+```
+
+Change `0.75s` to control how fast elements appear on scroll.
+
+**Typing speed** — in `src/components/TypingAnimation.tsx`:
+```tsx
+const typeSpeed = isDeleting ? 45 : 90;  // ms per character
+// pause after full word:
+}, 2200);
+```
+
+- Lower `90` → types faster
+- Higher `2200` → waits longer before deleting
+
+---
+
+### 15. Change Page Title / SEO
+
+Open `index.html`:
+```html
+<title>Sa Kib | Portfolio</title>
+<meta name="description" content="Sa Kib — Student, Code Explorer..." />
+```
+
+Replace with your name and description.
+
+---
+
+### 16. Add a New Section
+
+1. Add a new `<section id="mysection">` block in `Home.tsx`
+2. Add a nav link in `Navbar.tsx`:
+```tsx
+{ label: "PROJECTS", id: "mysection" },
+```
+3. Wrap content in `<ScrollReveal>` for animation
+
+---
+
+## Dependencies Used
+
+| Package | Purpose |
 |---|---|
-| < 50 small files | ✅ Inline batch — single JSON commit, very fast |
-| 50–500 files, mixed sizes | ✅ Concurrent streaming — 3 blobs at once, one atomic commit |
-| 500–1000 files | ✅ Works, takes a few minutes — GitHub API rate limit is the ceiling |
-| 1000+ files | ⚠️ Works locally; on Render free plan may hit 512 MB RAM limit |
-| Files > 100 MB each | ❌ GitHub REST API hard limit — use Git LFS for those |
-
-### Missing tools / risks in production
-
-| Risk | Severity | Fix |
-|---|---|---|
-| GitHub API rate limit (5000 req/hr for authenticated) | Medium | Use PAT with high quota; retry logic is built in |
-| Render free plan: 512 MB RAM | High | Upgrade to paid ($7/mo) or run locally |
-| Render free plan: 30s idle sleep | High | Use paid plan or a cron-style ping to keep alive |
-| No auth layer on the web UI | Medium | Add Flask-Login or Replit Auth before sharing publicly |
-| Single worker on Render free | Low | `--workers 1 --threads 8` is already set in Procfile |
+| `react` + `react-dom` | UI framework |
+| `react-icons` | Social media icons (SiFacebook, etc.) |
+| `tailwindcss` | Utility-first CSS |
+| `vite` | Build tool / dev server |
+| `typescript` | Type safety |
 
 ---
 
-## Where to Run
+## Common Issues
 
-| Environment | Best for | Notes |
-|---|---|---|
-| **Local laptop** | Development + large uploads | Zero limits, instant start |
-| **Render free** | Demo / sharing | 512 MB RAM, 30s idle sleep — avoid large uploads |
-| **Render paid ($7/mo)** | Production | Persistent disk, more RAM, no sleep |
-| **Railway / Fly.io** | Production alternative | Similar paid tiers, no sleep |
-| **VPS (DigitalOcean, Hetzner)** | Full control | Best for privacy + large repos |
+**Images not showing?**
+- Make sure `dp.jpg` and `cover.jpeg` are inside the `public/` folder
+- File names are case-sensitive
+
+**Fonts not loading?**
+- Check your internet connection — fonts load from Google Fonts
+- The `@import url(...)` must be the very first line in `index.css`
+
+**Build errors?**
+- Run `npm install` first
+- Make sure you haven't deleted any import at the top of the files
 
 ---
 
-## License
-
-MIT — free to use, modify, and distribute.
-Built with ❤️ by **dev.sakib**.
+Made with focus, intention, and a touch of madness.
+=======
+# sakib-portfolio
+>>>>>>> c7ec004571f3eb1945aecf9e657db93432d56f0b
