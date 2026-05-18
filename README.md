@@ -94,11 +94,9 @@ JavaScript
 GitPush was built to make GitHub repository management easier, faster, and more visual — especially for users who prefer a modern UI over terminal commands.
 
 👨‍💻 Author
-Sakib
+ Abdullah Al Sakib
 GitHub: https://github.com/abysss-sakib
 Instagram: @_unfound_entity
 ⭐ Support
 
-If you like this project, consider giving it a ⭐ on GitHub.
-
-<p align="center"> Built with passion by Sakib ⚡ </p> ```
+If you like this project, consider giving it a ⭐ on GitHub.```
